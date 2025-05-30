@@ -1,10 +1,3 @@
- /* AULA IoT - Ricardo Prates - 001 - Cliente MQTT - Publisher:/Temperatura; Subscribed:/led
- *
- * Material de suporte - 27/05/2025
- * 
- * Código adaptado de: https://github.com/raspberrypi/pico-examples/tree/master/pico_w/wifi/mqtt 
- */
-
 #include "pico/stdlib.h"            // Biblioteca da Raspberry Pi Pico para funções padrão (GPIO, temporização, etc.)
 #include "pico/cyw43_arch.h"        // Biblioteca para arquitetura Wi-Fi da Pico com CYW43
 #include "pico/unique_id.h"         // Biblioteca com recursos para trabalhar com os pinos GPIO do Raspberry Pi Pico
@@ -37,14 +30,17 @@
 #define TOPICO_CONTROLE_LEDS "/casa/controle/leds"
 #define TOPICO_CONTROLE_SENSOR "/casa/controle/sensor"
 
+// Variáveis globais
 mqtt_client_t *mqtt_client;
 bool sensor_ativo = true;
 bool modo_automatico = true;
 
+// Publica uma mensagem MQTT em um tópico específico
 void publicar(const char *topico, const char *mensagem) {
     mqtt_publish(mqtt_client, topico, mensagem, strlen(mensagem), 1, false, NULL, NULL);
 }
 
+// Controla os LEDs com base na string recebida
 void controle_led(const char *msg) {
     if (strcmp(msg, "vermelho") == 0) {
         gpio_put(LED_R, 1); gpio_put(LED_G, 0); gpio_put(LED_B, 0);
@@ -58,6 +54,7 @@ void controle_led(const char *msg) {
     publicar(TOPICO_LED_STATUS, msg);
 }
 
+// Trata os dados recebidos via MQTT
 void dados_recebidos_cb(void *arg, const u8_t *data, u16_t len, u8_t flags) {
     char payload[64];
     strncpy(payload, (const char *)data, len);
@@ -81,12 +78,14 @@ void dados_recebidos_cb(void *arg, const u8_t *data, u16_t len, u8_t flags) {
     }
 }
 
+// Callback de recebimento de tópico
 void topico_recebido_cb(void *arg, const char *topic, u32_t tot_len) {
     (void)arg;
     (void)tot_len;
     mqtt_set_inpub_callback(mqtt_client, topico_recebido_cb, dados_recebidos_cb, (void *)topic);
 }
 
+// Quando a conexão MQTT é aceita, assina os tópicos de controle
 void conexao_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
     if (status == MQTT_CONNECT_ACCEPTED) {
         mqtt_subscribe(client, TOPICO_CONTROLE_LEDS, 1, NULL, NULL);
@@ -95,6 +94,7 @@ void conexao_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t statu
     }
 }
 
+// Conecta ao Wi-Fi e ao broker MQTT
 void conectar_wifi_e_mqtt() {
     cyw43_arch_enable_sta_mode();
     cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000);
