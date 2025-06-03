@@ -7,7 +7,7 @@ Controlar LEDs RGB simulando dispositivos de uma casa inteligente, com acionamen
 
 ## 📷 Demonstração
 
-[🔗 Link para o vídeo]()
+[🔗 Link para o vídeo](https://youtu.be/j1ebMUvKqs8)
 
 ## 🔧 Funcionalidades
 - Detecção de presença com sensor TCRT5000
